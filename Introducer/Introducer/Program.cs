@@ -45,25 +45,28 @@ namespace Introducer
             switch (peerState.status)
             {
                 case PeerState.Status.Handshake:
-                    if (message == "host")
+                    if (message.StartsWith("host"))
                     {
+                        int port = int.Parse(message.Split(' ')[1]);
                         peerState.status = PeerState.Status.Host;
                         ServerSock.ConnectionInfo hostInfo = server.GetClientConnectionInfo(id);
                         peerState.host = new Host()
                         {
                             hostId = id,
                             ipAddress = hostInfo.ClientIP,
-                            originatingPort = hostInfo.ClientPort
+                            listeningPort = port
                         };
                         lock (hosts)
                             hosts.Add(peerState.host.guid, peerState.host);
-                        Console.WriteLine("{0} connected as a host", peerState.host);
+                        Console.WriteLine("{0} registered as a host", peerState.host);
                         return peerState.host.guid.ToString();
                     }
                     else
                     {
                         //we should have a guid - new client connecting
-                        Guid guid = Guid.Parse(message);
+                        string[] messageParts = message.Split(' ');
+                        Guid guid = Guid.Parse(messageParts[0]);
+                        int port = int.Parse(messageParts[1]);
                         Host h;
                         lock (hosts)
                             if (!hosts.TryGetValue(guid, out h))
