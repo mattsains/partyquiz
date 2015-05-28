@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using System.Net;
 using EasierSockets;
 
 
@@ -45,16 +45,18 @@ namespace Introducer
             switch (peerState.status)
             {
                 case PeerState.Status.Handshake:
-                    if (message.StartsWith("host"))
+                    string[] messageParts = message.Split(' ');
+                    if (messageParts[0] == "host")
                     {
-                        int port = int.Parse(message.Split(' ')[1]);
+                        string internalIP = messageParts[1];
                         peerState.status = PeerState.Status.Host;
                         ServerSock.ConnectionInfo hostInfo = server.GetClientConnectionInfo(id);
                         peerState.host = new Host()
                         {
                             hostId = id,
-                            ipAddress = hostInfo.ClientIP,
-                            listeningPort = port
+                            externalIpAddress = hostInfo.ClientIP,
+                            internalIpAddress = IPAddress.Parse(internalIP),
+                            listeningPort = hostInfo.ClientPort
                         };
                         lock (hosts)
                             hosts.Add(peerState.host.guid, peerState.host);
@@ -64,9 +66,8 @@ namespace Introducer
                     else
                     {
                         //we should have a guid - new client connecting
-                        string[] messageParts = message.Split(' ');
                         Guid guid = Guid.Parse(messageParts[0]);
-                        int port = int.Parse(messageParts[1]);
+                        string internalIp = messageParts[1];
                         Host h;
                         lock (hosts)
                             if (!hosts.TryGetValue(guid, out h))
@@ -78,10 +79,10 @@ namespace Introducer
                         {
                             clientId = id,
                             host = h,
-                            ipAddress = connInfo.ClientIP,
+                            externalIpAddress = connInfo.ClientIP,
+                            internalIpAddress = IPAddress.Parse(internalIp),
                             originatingPort = connInfo.ClientPort
                         };
-                        server.SendUpstream(h.hostId, peerState.controller.ToString());
                         Console.WriteLine("{0} connected as a client of {1}", peerState.controller, peerState.controller.host);
                         return h.ToString();
                     }

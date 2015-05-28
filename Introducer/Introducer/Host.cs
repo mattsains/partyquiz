@@ -11,12 +11,13 @@ namespace Introducer
     {
         public int hostId;
         public Guid guid = Guid.NewGuid();
-        public IPAddress ipAddress;
+        public IPAddress externalIpAddress;
+        public IPAddress internalIpAddress;
         public int listeningPort;
 
         public override string ToString()
         {
-            return string.Format("{0}:{1}", ipAddress.ToString(), listeningPort);
+            return string.Format("{0}:{1}:{2}", internalIpAddress, externalIpAddress, listeningPort);
         }
     }
 }

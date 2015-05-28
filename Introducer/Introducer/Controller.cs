@@ -11,12 +11,13 @@ namespace Introducer
     {
         public int clientId;
         public Host host;
-        public IPAddress ipAddress;
+        public IPAddress externalIpAddress;
+        public IPAddress internalIpAddress;
         public int originatingPort;
 
         public override string ToString()
         {
-            return string.Format("{0}:{1}", ipAddress.ToString(), originatingPort);
+            return string.Format("{0}:{1}:{2}", internalIpAddress, externalIpAddress, originatingPort);
         }
     }
 }
