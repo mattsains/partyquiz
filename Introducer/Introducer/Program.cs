@@ -48,15 +48,21 @@ namespace Introducer
                     string[] messageParts = message.Split(' ');
                     if (messageParts[0] == "host")
                     {
-                        string internalIP = messageParts[1];
-                        peerState.status = PeerState.Status.Host;
+                        string internalSock = messageParts[1];
                         ServerSock.ConnectionInfo hostInfo = server.GetClientConnectionInfo(id);
+                        IPAddress internalIp = IPAddress.Parse(internalSock.Split(':')[0]);
+                        int internalPort = int.Parse(internalSock.Split(':')[1]);
+                        IPAddress externalIp = hostInfo.ClientIP;
+                        int externalPort = hostInfo.ClientPort;
+                        peerState.status = PeerState.Status.Host;
+
                         peerState.host = new Host()
                         {
                             hostId = id,
-                            externalIpAddress = hostInfo.ClientIP,
-                            internalIpAddress = IPAddress.Parse(internalIP),
-                            listeningPort = hostInfo.ClientPort
+                            externalIpAddress = externalIp,
+                            externalPort = externalPort,
+                            internalIpAddress = internalIp,
+                            internalPort = internalPort
                         };
                         lock (hosts)
                             hosts.Add(peerState.host.guid, peerState.host);
